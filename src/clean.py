@@ -2,21 +2,18 @@ from .utils import logger_util
 import pandas as pd
 from bs4 import BeautifulSoup
 from dataclasses import dataclass
-import json
+from io import BytesIO
 
 logger = logger_util(__name__)
-
 
 
 @dataclass
 class Clean:
 
-
-
     # this might need to be a stream? or azure blob storage?
-    def standards_dataframe(self, json_list : list) -> pd.DataFrame:
+    def standards_dataframe(self, csv_file_stream: bytes) -> pd.DataFrame:
 
-        dataframe = pd.read_json(json.dumps(json_list))
+        dataframe = pd.read_csv(BytesIO(csv_file_stream))
 
         dataframe["Name"] = dataframe["standard_title"].str.extract("Part (\d+) -")
         dataframe["Content"] = (
@@ -26,10 +23,9 @@ class Clean:
 
         return final_df
 
+    def get_article_from_html(self, file: bytes) -> pd.DataFrame:
 
-    def get_article_from_html(self,file: str) -> pd.DataFrame:
-
-        df = pd.read_json(file)
+        df = pd.read_csv(BytesIO(file))
         articles = df["article"].apply(lambda x: BeautifulSoup(x, "html.parser"))
         df["ExternalId"] = articles.apply(
             lambda x: x.find("article").get("data-history-node-id")
@@ -37,7 +33,6 @@ class Clean:
 
         df = df.rename(columns={"article": "content"})
         return df
-
 
     # strip title column
     def strip_title(self, df: pd.DataFrame):
@@ -50,7 +45,6 @@ class Clean:
         df1 = df1.drop("article_title", axis=1)
 
         return df1
-
 
     # create citation dataframe
     def citation_df(self, dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -71,17 +65,12 @@ class Clean:
 
         return citation_df.rename(columns={1: "Content"})
 
-
     # remove bulleted-list-header node-header from the html output
-
 
     def remove_ul_header(self, soup: BeautifulSoup) -> BeautifulSoup:
         for node in soup.findAll("ul", {"class": "bulleted-list-header node-header"}):
             node.decompose()
         return soup.prettify()
 
-
-    #TODO 
-    # remove copyright? 
-
-
+    # TODO
+    # remove copyright?

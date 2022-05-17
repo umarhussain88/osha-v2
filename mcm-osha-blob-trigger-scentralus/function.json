@@ -5,10 +5,9 @@
       "name": "myblob",
       "type": "blobTrigger",
       "direction": "in",
-      "path": "osha-regs-output/{blobname}.json",
+      "path": "osha-regs-output/{blobname}.csv",
       "connection": "mcmoshascraperscentralus_STORAGE", 
       "AzureWebJobsStorage": "mcmoshascraperscentralus_STORAGE"
-
     }
   ]
 }

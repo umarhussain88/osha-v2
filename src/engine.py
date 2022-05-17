@@ -1,11 +1,28 @@
 from dataclasses import dataclass
 from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 from azure.storage.blob import ContainerClient
 from io import StringIO
 import pandas as pd 
+from .utils import logger_util
+
+logger = logger_util(__name__)
 
 @dataclass
 class Engine:
+    
+    """ Engine class for connecting to an Azure SQL Server, 
+        Used as a parent class for other classes.
+        
+        args:
+            sql_server: str
+            sql_user: str
+            sql_db: str
+            sql_password: str
+        
+        usage:
+            engine = Engine(sql_server="", sql_user="", sql_db="", sql_password="")
+    """
 
     sql_server: str
     sql_user: str
@@ -18,9 +35,15 @@ class Engine:
         params = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={{{self.sql_server}}};DATABASE={{{self.sql_db}}};UID={{{self.sql_user}}};PWD={{{self.sql_password}}};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
         con_str = f"mssql+pyodbc:///?odbc_connect={params}"
         engine = create_engine(con_str, fast_executemany=True)
+        
+        try:
+            engine.connect()
+        except OperationalError as e: 
+            logger.error(f"Failed to connect to database: {e}")
+            
 
-        # post init
         object.__setattr__(self, "engine", engine)
+        
 
 
 

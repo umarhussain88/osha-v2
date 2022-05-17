@@ -1,13 +1,13 @@
+import json
 import logging
+import os
 
 import azure.functions as func
-from src import Engine, Clean
-import os
 import pandas as pd
-import json
+from bs4 import BeautifulSoup
+from src import Clean, Engine, logger_util
 
-
-
+logger = logger_util(__name__)
 
 def main(myblob: func.InputStream):
     logging.info(
@@ -26,26 +26,38 @@ def main(myblob: func.InputStream):
 
     cl = Clean()
 
-
     file_name = myblob.name.split("/")[-1]
     logging.info(f"File name: {file_name}")
 
-    # read blob stream as json object
+    # read blob stream as csv object
+    
     blob_stream = myblob.read()
-    blob_json = json.loads(blob_stream)
-
-    # convert json object to pandas dataframe
-
-    #write a function to parse the file name and then execute the correct function. 
-
-    standards_df = cl.standards_dataframe(blob_json)
-    logging.info(f"Dataframe shape: {standards_df.shape}")
-
-    standards_df['Process'] = -1
-    standards_df['CreatedDate'] = pd.Timestamp.now()
-    standards_df['UpdatedDate'] = pd.Timestamp.now()
-    standards_df['externalID'] = -1
-
-    standards_df.to_sql(name="LoiDocuments",schema='dbo', con=eng.engine, if_exists="replace", index=False)
 
 
+    if file_name == "articles.csv":
+
+        article_df = cl.get_article_from_html(blob_stream)
+        article_df = cl.strip_title(article_df)
+        article_df["content"] = article_df["content"].apply(
+            lambda x: BeautifulSoup(x, "html.parser")
+        )
+        article_df["content"] = article_df["content"].apply(cl.remove_ul_header)
+        article_df.to_sql(
+            "letters_of_interpretation", schema="stg", index=False, con=eng.engine, 
+            if_exists='replace'
+        )
+
+    elif file_name == "standards.csv":
+        logger.info('Processing "standards.csv"')
+        standards_df = cl.standards_dataframe(blob_stream)
+        logging.info(f"Dataframe shape: {standards_df.shape}")
+
+        standards_df["created_date"] = pd.Timestamp('now').strftime('%Y-%m-%d %H:%M:%S')
+        
+        standards_df.to_sql(
+            name="loi_documents",
+            schema="stg",
+            con=eng.engine,
+            if_exists="replace",
+            index=False,
+        )

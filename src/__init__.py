@@ -7,6 +7,19 @@ from .utils import logger_util
 
 #generic func to run spider
 def run_spider(spider_name : str , settings = get_project_settings):
+    
+    """Runs a spider with the given name - only two options are currently supported:
+
+    args:
+        spider_name: str - name of spider to run
+        settings: settings object - settings to use for spider
+        
+    example:
+        run_spider('oshaSpider')
+
+    Raises:
+        ValueError: if the spider_name is not one of the supported options
+    """
 
     spider_names = {'oshaSpider' : oshaSpider, 'StandardRegsSpider' : StandardRegsSpider}
 
