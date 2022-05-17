@@ -44,4 +44,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-*.vscode
+#vscode cache
+.vscode
+.vscode/settings.json
