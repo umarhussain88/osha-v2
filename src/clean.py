@@ -23,6 +23,13 @@ class Clean:
 
         return final_df
 
+
+    def create_bs4_object_from_series(self, df: pd.Series) -> BeautifulSoup:
+
+        df = df.apply(lambda x: BeautifulSoup(x, "html.parser"))
+        return df        
+    
+    
     def get_article_from_html(self, file: bytes) -> pd.DataFrame:
 
         df = pd.read_csv(BytesIO(file))
@@ -65,12 +72,18 @@ class Clean:
 
         return citation_df.rename(columns={1: "Content"})
 
-    # remove bulleted-list-header node-header from the html output
 
-    def remove_ul_header(self, soup: BeautifulSoup) -> BeautifulSoup:
+    def remove_ul_header(self, soup: pd.Series) -> BeautifulSoup:
+        
         for node in soup.findAll("ul", {"class": "bulleted-list-header node-header"}):
             node.decompose()
+
         return soup.prettify()
 
-    # TODO
-    # remove copyright?
+
+    def remove_copyright_header(self, soup : pd.Series) -> BeautifulSoup:
+        
+        for node in soup.findAll("section", {"class": "block clearfix"}):
+            node.decompose()
+
+        return soup.prettify()

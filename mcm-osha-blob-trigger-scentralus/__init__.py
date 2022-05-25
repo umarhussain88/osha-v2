@@ -38,10 +38,17 @@ def main(myblob: func.InputStream):
 
         article_df = cl.get_article_from_html(blob_stream)
         article_df = cl.strip_title(article_df)
-        article_df["content"] = article_df["content"].apply(
-            lambda x: BeautifulSoup(x, "html.parser")
-        )
-        article_df["content"] = article_df["content"].apply(cl.remove_ul_header)
+        
+        #very expensive operation - look at doing this in a better way.
+        content = cl.create_bs4_object_from_series(article_df['content'])
+        content = content.apply(cl.remove_ul_header)
+        content = cl.create_bs4_object_from_series(content)
+        content = content.apply(cl.remove_copyright_header)
+        
+        article_df['content'] = content 
+        
+        article_df["created_date"] = pd.Timestamp('now').strftime('%Y-%m-%d %H:%M:%S')
+        
         article_df.to_sql(
             "letters_of_interpretation", schema="stg", index=False, con=eng.engine, 
             if_exists='replace'
