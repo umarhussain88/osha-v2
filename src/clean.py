@@ -11,6 +11,13 @@ logger = logger_util(__name__)
 class Clean:
 
     # this might need to be a stream? or azure blob storage?
+    
+    def create_csv_dataframe_from_stream(self, stream: bytes) -> pd.DataFrame:
+        
+        df = pd.read_csv(BytesIO(stream))
+        
+        return df
+    
     def standards_dataframe(self, csv_file_stream: bytes) -> pd.DataFrame:
 
         dataframe = pd.read_csv(BytesIO(csv_file_stream))
