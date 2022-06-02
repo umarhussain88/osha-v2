@@ -19,3 +19,20 @@ def logger_util(name : str) -> logging.Logger:
     logger.addHandler(ch)
 
     return logger
+
+
+def identify_file(file_name : str) -> str:
+    """
+    Identify the file and write it to the relevant SQL table in stage.
+    """
+    
+    map_dict = {'articles.csv' : 'article', 
+     'standards.csv' : 'standard',
+     'citations.csv' : 'citation', 
+     'phmsa_regulations.csv' : 'phmsa_regulations'
+     }
+    
+    return map_dict.get(file_name)
+    
+    
+    
