@@ -29,7 +29,8 @@ def identify_file(file_name : str) -> str:
     map_dict = {'articles.csv' : 'article', 
      'standards.csv' : 'standard',
      'citations.csv' : 'citation', 
-     'phmsa_regulations.csv' : 'phmsa_regulations'
+     'phmsa_regulations.csv' : 'phmsa_regulations', 
+     'phmsa_citations.csv' : 'phmsa_citations'
      }
     
     return map_dict.get(file_name)

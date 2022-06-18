@@ -38,4 +38,4 @@ def main(myblob: func.InputStream):
 
     df = cl.create_csv_dataframe_from_stream(blob_stream)
 
-    df.to_sql(table, schema="stg", con=eng.engine, if_exists="replace", index=False)
+    df.astype(str).to_sql(table, schema="stg", con=eng.engine, if_exists="replace", index=False)
